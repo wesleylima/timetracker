@@ -10,9 +10,12 @@
     "test:unit": "vue-cli-service test:unit"
   },
   "dependencies": {
+    "gun": "^0.9.9999991",
+    "moment-timezone": "^0.5.23",
     "register-service-worker": "^1.6.2",
     "vue": "^2.6.6",
     "vue-gun": "^0.0.3",
+    "vue-moment": "^4.0.0",
     "vue-router": "^3.0.1",
     "vuejs-spreadsheet": "^1.6.1",
     "vuex": "^3.0.1"

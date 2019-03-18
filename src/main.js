@@ -3,13 +3,10 @@ import App from './App.vue';
 import router from './router';
 import store from './store';
 import './registerServiceWorker';
-import VueGun from 'vue-gun';
+
+// require('gun/lib/open.js');
 
 Vue.config.productionTip = false;
-
-Vue.use(VueGun, {
-    peers: ['someurl.com:9000/gun']
-});
 
 new Vue({
   router,

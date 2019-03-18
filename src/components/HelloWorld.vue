@@ -2,18 +2,19 @@
   <div id="app">
     <h1>timetracker</h1>
     <vue-table
-      :tbody-data="products"
+      :tbody-data="formattedEntries"
       :headers="headers"
       :custom-options="customOptions"
       :style-wrap-vue-table="styleWrapVueTable"
       :disable-cells="disableCells"
-      :disable-sort-thead="disableSortThead"
+      :disable-sort-thead="[]"
       :loading="loading"
       :parent-scroll-element="parentScrollElement"
       :select-position="selectPosition"
       :submenuThead="[]"
       v-on:tbody-change-data="changeData"
-      v-on:thead-td-sort="sortProduct">
+      v-on:tbody-submenu-click-change-value="changeValueTbody"
+      v-on:thead-td-sort="sortEntry">
     <div slot="header">
       <h2>March 2019</h2>
     </div>
@@ -25,13 +26,21 @@
 </template>
 
 <script>
-
+import Gun from 'gun';
+import open from 'gun/lib/open';
+// import SEA from 'gun/sea'; // Required for SEA functions and user authentication
 import VueTable from 'vuejs-spreadsheet';
+import Vue from 'vue';
+// import moment from 'moment-timezone';
+
+const gun = new Gun();
+console.log(open);
 
 export default {
   name: 'app',
   data() {
     return {
+      vueState: {},
       customOptions: {
         tbodyIndex: true,
         sortHeader: true,
@@ -70,58 +79,7 @@ export default {
           ],
         },
       },
-      submenuTbody: [
-        {
-          type: 'button',
-          value: 'change color',
-          function: 'change-color',
-          disabled: ['img'],
-        },
-        {
-          type: 'button',
-          value: 'change value',
-          function: 'change-value',
-          disabled: ['img', 'name'],
-        },
-      ],
-      submenuThead: [
-        {
-          type: 'button',
-          value: 'change color',
-          function: 'change-color',
-          disabled: ['a'],
-        },
-        {
-          type: 'select',
-          disabled: ['a'],
-          subtitle: 'Select state:',
-          selectOptions: [
-            {
-              value: 'new-york',
-              label: 'new-york',
-            },
-            {
-              value: 'france',
-              label: 'france',
-            },
-          ],
-          value: 'new-york',
-          buttonOption: {
-            value: 'change city',
-            function: 'change-city',
-            style: {
-              display: 'block',
-            },
-          },
-        },
-        {
-          type: 'button',
-          value: 'change value',
-          function: 'change-value',
-          disabled: ['a', 'b'],
-        },
-      ],
-      disableCells: ['a'],
+      disableCells: ['time'],
       loading: false,
       parentScrollElement: {
         attribute: 'html',
@@ -131,14 +89,13 @@ export default {
         top: 0,
         left: 0,
       },
-      disableSortThead: ['a'],
       styleWrapVueTable: {
         color: '15px',
       },
       headers: [
         {
           headerName: 'In',
-          headerKey: 'a',
+          headerKey: 'in',
           style: {
             width: '200px',
             minWidth: '200px',
@@ -147,7 +104,7 @@ export default {
         },
         {
           headerName: 'Out',
-          headerKey: 'b',
+          headerKey: 'out',
           style: {
             width: '200px',
             minWidth: '200px',
@@ -155,17 +112,17 @@ export default {
           },
         },
         {
-          headerName: 'Hours',
-          headerKey: 'c',
+          headerName: 'Time',
+          headerKey: 'time',
           style: {
-            width: '200px',
-            minWidth: '200px',
+            width: '100px',
+            minWidth: '100px',
             color: '#000',
           },
         },
         {
           headerName: 'Description',
-          headerKey: 'd',
+          headerKey: 'description',
           style: {
             width: '200px',
             minWidth: '200px',
@@ -174,7 +131,7 @@ export default {
         },
         {
           headerName: 'Ticket Id',
-          headerKey: 'e',
+          headerKey: 'ticket_id',
           style: {
             width: '200px',
             minWidth: '200px',
@@ -183,7 +140,7 @@ export default {
         },
         {
           headerName: 'Account',
-          headerKey: 'f',
+          headerKey: 'account',
           style: {
             width: '200px',
             minWidth: '200px',
@@ -191,128 +148,176 @@ export default {
           },
         },
       ],
-      products: [
-        {
-          a: {
-            type: 'input',
-            value: '2019-03-14',
-            active: false,
-            style: {
-              color: '#000',
-            },
-          },
-          c: {
-            type: 'input',
-            value: 'Paris',
-            active: false,
-            style: {
-              color: '#000',
-            },
-          },
-          d: {
-            type: 'input',
-            value: 'France',
-            active: false,
-            style: {
-              color: '#000',
-            },
-          },
-          e: {
-            type: 'input',
-            value: 'Boe',
-            active: false,
-            style: {
-              color: '#000',
-            },
-          },
-          f: {
-            type: 'select',
-            handleSearch: true,
-            selectOptions: [
-              {
-                value: 'Harry Potter',
-                label: 'harry potter',
-              },
-              {
-                value: 'Hermione Granger',
-                label: 'hermione granger',
-              },
-              {
-                value: 'Ron Whisley',
-                label: 'ron whisley',
-              },
-              {
-                value: 'Dobby',
-                label: 'dobby',
-              },
-              {
-                value: 'Hagrid',
-                label: 'hagrid',
-              },
-              {
-                value: 'Professeur Rogue',
-                label: 'professeur rogue',
-              },
-              {
-                value: 'Professeur Mcgonagal',
-                label: 'professeur mcgonagal',
-              },
-              {
-                value: 'Professeur Dumbledor',
-                label: 'professeur dumbledor',
-              },
-            ],
-            value: 'professeur dumbledor',
-            active: false,
-          },
-          g: {
-            type: 'select',
-            handleSearch: true,
-            selectOptions: [
-              {
-                value: 1980,
-                label: 1980,
-              },
-              {
-                value: 1981,
-                label: 1981,
-              },
-              {
-                value: 1982,
-                label: 1982,
-              },
-              {
-                value: 1983,
-                label: 1983,
-                active: true,
-              },
-              {
-                value: 1984,
-                label: 1984,
-              },
-            ],
-            value: 1983,
-            active: false,
-          },
-        },
-      ],
     };
+  },
+  computed: {
+    formattedEntries: {
+      cache: false,
+      get() {
+        let formattedEntryTemplate = {
+          in: {
+            type: 'input',
+            value: '',
+            active: false,
+            style: {
+              color: '#000',
+            },
+          },
+          out: {
+            type: 'input',
+            value: '',
+            active: false,
+            style: {
+              color: '#000',
+            },
+          },
+          time: {
+            type: 'input',
+            value: '',
+            active: false,
+            style: {
+              color: '#000',
+            },
+          },
+          description: {
+            type: 'input',
+            value: '',
+            active: false,
+            style: {
+              color: '#000',
+            },
+          },
+          ticket_id: {
+            type: 'input',
+            handleSearch: true,
+            value: '',
+            active: false,
+          },
+          account: {
+            type: 'select',
+            handleSearch: true,
+            selectOptions: [], // this.accounts,
+            value: '',
+            active: false,
+          },
+          key: {
+            value: '',
+          },
+        };
+        const entries = Object.keys(this.vueState).map((key) => {
+          const entry = this.vueState[key];
+          const formattedEntry = JSON.parse(JSON.stringify(formattedEntryTemplate));
+          Object.keys(formattedEntry).forEach((k) => {
+            formattedEntry[k].value = entry[k] || '';
+            formattedEntry.key.value = key;
+          });
+          return formattedEntry;
+        });
+        const newEntry = JSON.parse(JSON.stringify(formattedEntryTemplate));
+        newEntry.key = { value: parseInt(Math.random() * 10000000000, 0) };
+        entries.push(newEntry);
+
+        return entries;
+      },
+    },
   },
   components: {
     VueTable,
   },
   mounted() {
-    this.$gun.get('some path').map().on((node, key) => {
+    gun.get('entries').map().on((node, key) => {
+      if (typeof (node) === 'object') {
         // add results straight to the Vue component state
         // and get updates when nodes are updated by GUN
-        this.vueState[key] = node;
+        // console.log(`${key}: ${node}`);
+        Vue.set(this.vueState, key, node);
+        // console.log('recomputing');
+        // this.$recompute('formattedEntries');
+        // console.log(node);
+      }
+
+      /*
+      this.accounts = [
+        {
+          value: 'Harry Potter',
+          label: 'harry potter',
+        },
+      ];
+      */
     });
   },
   methods: {
-    changeData(row, header) {
-      console.log(row, header);
+    formatEntry(entry, key) {
+      const formattedEntryTemplate = {
+        in: {
+          type: 'input',
+          value: '',
+          active: false,
+          style: {
+            color: '#000',
+          },
+        },
+        out: {
+          type: 'input',
+          value: '',
+          active: false,
+          style: {
+            color: '#000',
+          },
+        },
+        time: {
+          type: 'input',
+          value: '',
+          active: false,
+          style: {
+            color: '#000',
+          },
+        },
+        description: {
+          type: 'input',
+          value: '',
+          active: false,
+          style: {
+            color: '#000',
+          },
+        },
+        ticket_id: {
+          type: 'input',
+          handleSearch: true,
+          value: '',
+          active: false,
+        },
+        /*
+        account: {
+          type: 'select',
+          handleSearch: true,
+          selectOptions: [], // this.accounts,
+          value: '',
+          active: false,
+        },
+        */
+        key: {
+          value: '',
+        },
+      };
+      const formattedEntry = { ...formattedEntryTemplate };
+      Object.keys(formattedEntry).forEach((k) => {
+        formattedEntry[k].value = entry[k] || '';
+        formattedEntry.key.value = key;
+      });
+      return formattedEntry;
     },
-    sortProduct(event, header, colIndex) {
+    changeData(row, header) {
+      if (row in ['in', 'out']) {
+        // console.log(row);
+        // console.log(header);
+      }
+      const key = this.formattedEntries[row].key.value;
+      const { value } = this.formattedEntries[row][header];
+
+      const entry = gun.get('entries').get(key).get(header).put(value);
+    },
+    sortEntry(event, header, colIndex) {
       console.log(colIndex);
       console.log('sort product');
     },
@@ -321,11 +326,13 @@ export default {
       this.headers[colIndex].style.color = '#e40000';
     },
     changeColorTbody(event, header, rowIndex, colIndex) {
-      this.products[rowIndex][header].style = {};
-      this.products[rowIndex][header].style.color = '#e40000';
+      console.log(colIndex);
+      // this.products[rowIndex][header].style = {};
+      // this.products[rowIndex][header].style.color = '#e40000';
     },
     changeValueTbody(event, header, rowIndex, colIndex) {
-      this.products[rowIndex][header].value = 'T-shirt';
+      console.log(colIndex);
+      // this.products[rowIndex][header].value = 'T-shirt';
     },
     changeValueThead(event, entry, colIndex) {
       this.headers[colIndex].headerName = 'T-shirt';
