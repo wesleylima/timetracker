@@ -1,27 +1,33 @@
 <template>
   <div id="app">
     <h1>timetracker</h1>
-    <vue-table
-      :tbody-data="formattedEntries"
-      :headers="headers"
-      :custom-options="customOptions"
-      :style-wrap-vue-table="styleWrapVueTable"
-      :disable-cells="disableCells"
-      :disable-sort-thead="[]"
-      :loading="loading"
-      :parent-scroll-element="parentScrollElement"
-      :select-position="selectPosition"
-      :submenuThead="[]"
-      v-on:tbody-change-data="changeData"
-      v-on:tbody-submenu-click-change-value="changeValueTbody"
-      v-on:thead-td-sort="sortEntry">
-    <div slot="header">
       <h2>March 2019</h2>
-    </div>
-    <div slot="loader">
-      Loader
-    </div>
-    </vue-table>
+    <table>
+      <thead>
+        <tr>
+          <th>In</th>
+          <th>Out</th>
+          <th>Time</th>
+          <th>Description</th>
+          <th>Ticket Id</th>
+          <th>Account</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="(row) in Object.entries(this.entries)">
+          <td><input style="background-color: #FFFFFF; color: #000000;" :value="formatDate(row[1].in)" @change="changeInput($event, 'in', row[0], 'dateTime')" /></td>
+          <td><input style="background-color: #FFFFFF; color: #000000;" :value="formatDate(row[1].out)" @change="changeInput($event, 'out', row[0], 'dateTime')" /></td>
+          <td>{{getTime(row[1])}}</td>
+          <td><input style="background-color: #FFFFFF; color: #000000;" :value="row[1].description" @change="changeInput($event, 'description', row[0])" /></td>
+          <td><input style="background-color: #FFFFFF; color: #000000;" :value="row[1].ticket_id" @change="changeInput($event, 'ticket_id', row[0])" /></td>
+          <td><input style="background-color: #FFFFFF; color: #000000;" :value="row[1].account" @change="changeInput($event, 'account', row[0])" /></td>
+        </tr>
+        <tr>
+          <td><input style="background-color: #FFFFFF; color: #000000;" :value="entry.in" @change="changeInput($event, 'in')" />{{ entry.in }}</td>
+        </tr>
+      </tbody>
+    </table>
+
   </div>
 </template>
 
@@ -31,9 +37,9 @@ import open from 'gun/lib/open';
 // import SEA from 'gun/sea'; // Required for SEA functions and user authentication
 import VueTable from 'vuejs-spreadsheet';
 import Vue from 'vue';
-// import moment from 'moment-timezone';
+import moment from 'moment-timezone';
 
-const gun = new Gun();
+const gun = new Gun('http://localhost:8089/gun');
 console.log(open);
 
 export default {
@@ -151,6 +157,26 @@ export default {
     };
   },
   computed: {
+    entry: {
+      get () {
+        return 'get';
+      },
+      set (val) {
+        console.log('setting');
+        console.log(val);
+      }
+    },
+    entries: {
+      get () {
+        console.log('getting');
+        return this.vueState;
+      },
+      set (value) {
+        console.log('setting');
+        console.log(value);
+        // const entry = gun.get('entries').get(key).get(header).put(value);
+      }
+    },
     formattedEntries: {
       cache: false,
       get() {
@@ -189,7 +215,6 @@ export default {
           },
           ticket_id: {
             type: 'input',
-            handleSearch: true,
             value: '',
             active: false,
           },
@@ -215,6 +240,7 @@ export default {
         });
         const newEntry = JSON.parse(JSON.stringify(formattedEntryTemplate));
         newEntry.key = { value: parseInt(Math.random() * 10000000000, 0) };
+        newEntry.account.active = true;
         entries.push(newEntry);
 
         return entries;
@@ -226,10 +252,13 @@ export default {
   },
   mounted() {
     gun.get('entries').map().on((node, key) => {
+      // console.log(node);
       if (typeof (node) === 'object') {
         // add results straight to the Vue component state
         // and get updates when nodes are updated by GUN
         // console.log(`${key}: ${node}`);
+        console.log(node);
+        console.log(key);
         Vue.set(this.vueState, key, node);
         // console.log('recomputing');
         // this.$recompute('formattedEntries');
@@ -247,65 +276,31 @@ export default {
     });
   },
   methods: {
-    formatEntry(entry, key) {
-      const formattedEntryTemplate = {
-        in: {
-          type: 'input',
-          value: '',
-          active: false,
-          style: {
-            color: '#000',
-          },
-        },
-        out: {
-          type: 'input',
-          value: '',
-          active: false,
-          style: {
-            color: '#000',
-          },
-        },
-        time: {
-          type: 'input',
-          value: '',
-          active: false,
-          style: {
-            color: '#000',
-          },
-        },
-        description: {
-          type: 'input',
-          value: '',
-          active: false,
-          style: {
-            color: '#000',
-          },
-        },
-        ticket_id: {
-          type: 'input',
-          handleSearch: true,
-          value: '',
-          active: false,
-        },
-        /*
-        account: {
-          type: 'select',
-          handleSearch: true,
-          selectOptions: [], // this.accounts,
-          value: '',
-          active: false,
-        },
-        */
-        key: {
-          value: '',
-        },
-      };
-      const formattedEntry = { ...formattedEntryTemplate };
-      Object.keys(formattedEntry).forEach((k) => {
-        formattedEntry[k].value = entry[k] || '';
-        formattedEntry.key.value = key;
-      });
-      return formattedEntry;
+    formatDate(unformatted) {
+      console.log(unformatted);
+      const dt = moment.unix(unformatted);
+      if (dt._isValid) {
+        return dt.format('MM/DD/YYYY h:mm:ss A');
+      }
+      return unformatted;
+    },
+    getTime(entry) {
+      const clockIn = moment.unix(entry.in);
+      const clockOut = moment.unix(entry.out);
+      if (clockIn._isValid && clockOut._isValid) {
+        return `${parseInt((entry.out - entry.in)/60, 0)} minutes` ;
+      }
+      return '';
+    },
+    changeInput(event, header, key, type) {
+      let value = event.target.value;
+      if (type && type === 'dateTime') {
+        const dt = moment(value);
+        if (dt._isValid) {
+          value = dt.unix();
+        }
+      }
+      const entry = gun.get('entries').get(key).get(header).put(value);
     },
     changeData(row, header) {
       if (row in ['in', 'out']) {
