@@ -1,11 +1,11 @@
 <template>
   <tr>
-    <td><input style="background-color: #FFFFFF; color: #000000;" :value="formatDate(value.in)" @change="changeInput($event, 'in', gKey, 'dateTime')" /></td>
-    <td><input style="background-color: #FFFFFF; color: #000000;" :value="formatDate(value.out)" @change="changeInput($event, 'out', gKey, 'dateTime')" /></td>
+    <td><input style="width: 165px;" :value="formatDate(value.in)" @change="changeInput($event.target.value, 'in', gKey, 'dateTime')" @keyup.ctrl.65="stamp($event, 'in', gKey)"/></td>
+    <td><input style="width: 165px;" :value="formatDate(value.out)" @change="changeInput($event.target.value, 'out', gKey, 'dateTime')" @keyup.ctrl.65="stamp($event, 'out', gKey)" /></td>
     <td>{{getTime(value)}}</td>
-    <td><input style="background-color: #FFFFFF; color: #000000;" :value="value.description" @change="changeInput($event, 'description', gKey)" /></td>
-    <td><input style="background-color: #FFFFFF; color: #000000;" :value="value.ticket_id" @change="changeInput($event, 'ticket_id', gKey)" /></td>
-    <td><input style="background-color: #FFFFFF; color: #000000;" :value="value.account" @change="changeInput($event, 'account', gKey)" /></td>
+    <td><input style="width: 500px;" :value="value.description" @change="changeInput($event.target.value, 'description', gKey)" /></td>
+    <td><input style="width: 100px;" :value="value.ticket_id" @change="changeInput($event.target.value, 'ticket_id', gKey)" /></td>
+    <td><input style="width: 145px;" :value="value.account" @change="changeInput($event.target.value, 'account', gKey)" /></td>
   </tr>
 </template>
 
@@ -19,11 +19,24 @@ export default {
     return {}
   },
   props: {
-    gKey: String,
+    gKey: {
+      type: String,
+      required: false,
+    },
     value: Object,
-    changeInput: Function,
+    changeInput: {
+      type: Function,
+      required: true,
+    }
   },
   methods: {
+    stamp(event, header, gKey) {
+      console.log('stamping');
+      event.preventDefault();
+      const now = moment();
+      this.changeInput(now.format('YYYY-MM-DDTH:mm:ss'), header, gKey, 'dateTime');
+      this.value[header] = now.unix();
+    },
     formatDate(unformatted) {
       if (unformatted) {
         const dt = moment.unix(unformatted);
@@ -34,13 +47,22 @@ export default {
       return unformatted;
     },
     getTime(entry) {
-      const clockIn = moment.unix(entry.in);
-      const clockOut = moment.unix(entry.out);
-      if (clockIn._isValid && clockOut._isValid) {
-        return `${parseInt((entry.out - entry.in)/60, 0)} minutes` ;
+      if (entry.in) {
+        const clockIn = moment.unix(entry.in);
+        const clockOut = entry.out ? moment.unix(entry.out) : moment().unix();
+        if (clockIn._isValid && clockOut._isValid) {
+          return `${parseInt((entry.out - entry.in)/60, 0)} minutes` ;
+        }
       }
       return ' ';
     },
   }
 }
 </script>
+
+
+<style>
+  input {
+    background-color: #FFFFFF; color: #000000; border: none;
+  }
+</style>

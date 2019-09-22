@@ -3,22 +3,28 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "serve": "vue-cli-service serve",
+    "serve": "node --max_old_space_size=4096 node_modules/.bin/vue-cli-service serve --open",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
     "test:e2e": "vue-cli-service test:e2e",
     "test:unit": "vue-cli-service test:unit"
   },
   "dependencies": {
-    "gun": "^0.9.9999991",
+    "@vuex-orm/core": "^0.31.8",
+    "@vuex-orm/plugin-gun": "file:../plugin-gun",
+    "@vuex-orm/plugin-gun'": "file:../plugin-gun",
+    "eslint-plugin-jest": "^22.4.1",
+    "gun": "^0.2019.910",
     "moment-timezone": "^0.5.23",
+    "papaparse": "^4.6.3",
     "register-service-worker": "^1.6.2",
     "vue": "^2.6.6",
     "vue-gun": "^0.0.3",
     "vue-moment": "^4.0.0",
     "vue-router": "^3.0.1",
     "vuejs-spreadsheet": "^1.6.1",
-    "vuex": "^3.0.1"
+    "vuex": "^3.0.1",
+    "vuex-persist": "^2.0.0"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "^3.5.0",
