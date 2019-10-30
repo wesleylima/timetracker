@@ -2,6 +2,7 @@
   <div id="app">
     <h1>timetracker</h1>
       <h2>March 2019</h2>
+      <p>Welcome {{ alias }}</p>
     <table>
       <thead>
         <tr>
@@ -76,11 +77,11 @@
 </template>
 
 <script>
-import Gun from 'gun';
 // import open from 'gun/lib/open';
-// import SEA from 'gun/sea'; // Required for SEA functions and user authentication
+import SEA from 'gun/sea'; // Required for SEA functions and user authentication
 import VueTable from 'vuejs-spreadsheet';
 import Vue from 'vue';
+// import Gun from 'gun';
 // import VuexORMGun from '@vuex-orm/plugin-gun';
 import moment from 'moment-timezone';
 import Papa from 'papaparse';
@@ -88,12 +89,14 @@ import EntryRow from './EntryRow';
 // https://github.com/zrrrzzt/bullet-catcher
 //const gun = new Gun(['http://limaserver:8089/gun']);
 
-const gun = new Gun(['192.168.1.128:8089/gun']);
+//const gun = new Gun();
+//const user = gun.user();
 //const gun = new Gun();
 // import { Entry } from '../models/entry';
 
 // const gun = new Gun();
 
+/*
 Gun.on('opt', function (ctx) {
   if (ctx.once) {
     return
@@ -112,7 +115,8 @@ Gun.on('opt', function (ctx) {
     console.log('incoming message');
   });
   */
-});
+// });
+
 // console.log(open);
 
 /*
@@ -136,10 +140,17 @@ export default {
     };
   },
   computed: {
+    alias: {
+      get() {
+        return this.$user && this.$user.is && this.$user.is.alias;
+      }
+    },
     tickets: {
       get() {
         const start = moment().weekday(0);
+        // const start = moment('2019-09-28');
         const end = moment().endOf('week');
+        // const end = moment('2019-10-05');
         // 17 - 23
         return [ ...new Set(Object.values(this.entries).filter(e => e.in && moment.unix(e.in)._isValid && moment.unix(e.in).isAfter(start) && moment.unix(e.in).isBefore(end) )
           .map((e) => e.ticket_id).filter((t) => t))];
@@ -214,10 +225,10 @@ export default {
         const entriesArray = Object.entries(this.vueState).filter((e) => {
           if (e[1]) {
             return e[1].in > moment().startOf('month').unix() || !e[1].in;
+            // return (e[1].in > moment('2019-09-28').unix()  && e[1].in < moment('2019-10-05').unix()) || !e[1].in;
           }
         });
 
-        // const entriesArray = Object.entries(this.vueState).filter(e => e[1] && (e[1].account == "MJFreeway" || !e[1].account));
         const entries = {};
         entriesArray.forEach((entry) => {
           entries[entry[0]] = entry[1];
@@ -234,14 +245,25 @@ export default {
     EntryRow,
   },
   mounted() {
-    gun.get('entries').map().on((node, key) => {
+    if (!this.$user || !this.$user.is || !this.$user.is.alias) {
+      console.log(this.$user);
+      this.$router.push('login');
+    }
+
+    this.$gun.user().get('profile').then((p) => {
+      console.log('Asd');
+      console.log(p, 'p');
+
+    });
+
+    this.$gun.user().get('entries').map().on((node, key) => {
       // TODO: Handle indexing
       if (typeof (node) === 'object') {
         Vue.set(this.vueState, key, node);
         // Check if we want to delete this entryRow
         const entry = this.vueState[key];
         if (entry && !entry.in && !entry.out && !entry.description && !entry.ticket_id && !entry.account) {
-          gun.get('entries').get(key).put(null);
+          this.$gun.user().get('entries').get(key).put(null);
         }
       }
     });
@@ -308,9 +330,14 @@ export default {
 
       if (!key) {
         // We're making a new one
-        gun.get('entries').get(parseInt(Math.random() * 10000000000, 0)).put({}).get(header).put(value);
+        const encodedKey = String(parseInt(Math.random() * 10000000000, 0));
+        //
+        const entry = {};
+        entry[header] = value;
+        this.$gun.user().get('entries').get(encodedKey).put(entry); // .get(header).put(value);
       } else {
-        gun.get('entries').get(key).get(header).put(value);
+        const encodedKey = String(key);
+        this.$gun.user().get('entries').get(encodedKey).get(header).put(value);
       }
     },
     handleFiles() {
@@ -332,7 +359,7 @@ export default {
                 ticket_id: ticket_id,
                 account: account,
               };
-              gun.get('entries').get(parseInt(Math.random() * 10000000000, 0)).put(entry);
+              this.$gun.user().get('entries').get(parseInt(Math.random() * 10000000000, 0)).put(entry);
               console.log(entry);
             }
           });
