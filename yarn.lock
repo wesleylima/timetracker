@@ -4597,10 +4597,10 @@ gun@*:
     emailjs "^2.2.0"
     text-encoding "^0.7.0"
 
-gun@^0.2019.1211:
-  version "0.2019.1211"
-  resolved "https://registry.yarnpkg.com/gun/-/gun-0.2019.1211.tgz#37aa58217f86256b5d6f126450c8860f7bca384e"
-  integrity sha512-wueemUJBtNfVcZDeXK7wYbth+eu7tNFo5T54gAbA3N0VAN3zoPNE12saeekzrkVeMiKVxG8/kiR35BhykQ+CJg==
+gun@^0.2019.1228:
+  version "0.2019.1228"
+  resolved "https://registry.yarnpkg.com/gun/-/gun-0.2019.1228.tgz#7ba7b5e61a3a3a523a816a204ffe08342e98eb65"
+  integrity sha512-rPwayPk5iYXWHZg3ftYYESzHec7eTguIFBMjR2ZtfLp6DX6WLDMUOSwzaPBFhEzLZ/Qvqg1G3hviO7tTMbnjHg==
   dependencies:
     ws "~>7.1.0"
   optionalDependencies:

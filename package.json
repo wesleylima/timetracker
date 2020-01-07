@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "eslint-plugin-jest": "^22.4.1",
-    "gun": "^0.2019.1211",
+    "gun": "^0.2019.1228",
     "moment-timezone": "^0.5.23",
     "papaparse": "^4.6.3",
     "register-service-worker": "^1.6.2",
