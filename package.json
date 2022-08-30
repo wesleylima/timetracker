@@ -12,7 +12,7 @@
   "dependencies": {
     "eslint-plugin-jest": "^22.4.1",
     "gun": "^0.2019.1228",
-    "moment-timezone": "^0.5.23",
+    "moment-timezone": "^0.5.35",
     "papaparse": "^5.2.0",
     "register-service-worker": "^1.6.2",
     "vue": "^2.6.6",
